@@ -1,0 +1,3 @@
+codeword_index,start_pam4_symbol_index,pre_fec_bit_errors,pre_fec_rs_symbol_errors,decoder_success,decoder_reported_corrections,post_fec_payload_bit_errors
+3,9000,5,5,True,5,0
+4,11720,10,10,True,10,0

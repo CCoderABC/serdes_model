@@ -1,0 +1,111 @@
+link:
+  symbol_rate_gbaud: 56.0
+  samples_per_ui: 8
+  frequency_points: 8193
+
+channel:
+  kind: analytic_high_loss
+  differential_z0_ohm: 100.0
+  delay_ps: 500.0
+  loss_dc_db: 0.2
+  insertion_loss_db_at_nyquist: 36.0
+  skin_effect_fraction: 0.45
+
+afe:
+  gain_kind: Av_port
+  differential_input_z0_ohm: 100.0
+  dc_gain_db: 6.0
+  zeros_ghz: [5.0, 15.0]
+  poles_ghz: [30.0, 50.0, 90.0]
+
+transmitter:
+  modulation: PAM4
+  differential_outer_pp_v: 0.9
+  voltage_reference: differential port voltage across the matched 100-ohm channel input
+  pulse_shaping:
+    kind: gaussian_rise_time
+    rise_time_20_80_ps: 7.5
+
+eye_diagram:
+  symbol_count: 16384
+  trace_count: 600
+  guard_symbols: 512
+  interpolation_samples_per_ui: 64
+  random_seed: 2026
+
+agc_vga:
+  model: ideal_frequency_flat_vga
+  control_mode: worst_case_pulse_bound
+  target_adc_full_scale_fraction: 0.95
+  minimum_gain_db: -24.0
+  maximum_gain_db: 12.0
+  voltage_reference: differential port voltage gain, Vout_diff / Vin_diff
+
+adc:
+  model: effective_uniform_midrise
+  enob_bits: 6
+  differential_full_scale_pp_v: 0.4
+  input_reference: differential CTLE/AFE output voltage
+  samples_per_ui: 1
+  sampling_phase: main_cursor
+  automatic_gain_control_included: true
+
+code_domain_ffe:
+  tap_count: 17
+  training_fraction: 0.5
+  ridge_fraction: 1.0e-4
+  input_representation: unsigned ADC codes with midscale removal
+  evaluation: held-out contiguous sequence with tap-span boundary guard
+
+code_domain_dfe:
+  feedback_tap_count: 12
+  ridge_fraction: 1.0e-4
+  training_mode: known-symbol least squares
+  evaluation_modes: [genie_aided, decision_directed]
+
+fec:
+  enabled: true
+  kind: rs_544_514
+  field_symbol_bits: 10
+  parity_symbol_count: 30
+  correctable_symbol_errors: 15
+  pam4_codeword_length_symbols: 2720
+  alignment_offset_pam4_symbols: 840
+  bit_order_within_fec_symbol: msb_first
+  pam4_gray_mapping_low_to_high: ["00", "01", "11", "10"]
+  evaluation: complete held-out codewords after decision-directed DFE
+  target_post_fec_ber: 1.0e-12
+
+noise:
+  psd_sidedness: one_sided
+  code_path_injection_enabled: true
+  random_seed: 3031
+  afe_input_referred_density_nv_per_sqrt_hz: 2.0
+  source_port_density_nv_per_sqrt_hz: 0.0
+  afe_noise_reference: differential voltage at the AFE input port
+  receiver_termination_noise_included_in_afe_density: true
+  adc_input_load_noise_included: true
+  additional_adc_input_referred_noise_rms_mv: 0.75
+  additional_adc_noise_reference: differential ADC input, beyond effective quantization
+  reference_temperature_k: 290.0
+
+sampling_jitter:
+  model: independent_gaussian_aperture_jitter
+  rms_fs: 150.0
+  voltage_error_model: first_order_local_signal_slope
+
+decision_point:
+  equalizer: symbol_spaced_mmse_ffe
+  ffe_tap_count: 17
+  optimize_sampling_phase: true
+  channel_pre_ui: 8
+  channel_post_ui: 48
+  pattern_tap_count: 6
+  target_der: 1.0e-3
+  implementation_loss_db: 0.0
+
+output:
+  directory: runs/channel_afe_demo
+  plot_max_ghz: 80.0
+  pulse_pre_ui: 4
+  pulse_post_ui: 12
